@@ -1,4 +1,4 @@
-import http
+import http.client
 import unittest
 
 from app import app
@@ -13,5 +13,5 @@ class TestSensorData(BaseTestCase):
 
     def test_sensor_data(self):
         response = self.client.get("/sensor_data", follow_redirects=True)
-        assert response.status_code == http.HTTPStatus.OK
+        assert response.status_code == http.client.OK
 
