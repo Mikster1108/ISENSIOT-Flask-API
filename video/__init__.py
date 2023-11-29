@@ -1,8 +1,8 @@
 from flask import Blueprint
 
-video = Blueprint('video', __name__)
+api = Blueprint('video', __name__)
 
 
-@video.route("/")
+@api.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"

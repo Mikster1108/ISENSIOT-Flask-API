@@ -1,11 +1,9 @@
-import http
+from flask import Blueprint, jsonify
 
-from flask import Blueprint, jsonify, abort
-
-sensor_data = Blueprint('sensor_data', __name__)
+api = Blueprint('sensor_data', __name__)
 
 
-@sensor_data.route("/")
+@api.route("/", methods=['GET', 'POST'])
 def some_data():
     data = [{'timestamp': 'now', 'value': 69}]
     return jsonify(data)
