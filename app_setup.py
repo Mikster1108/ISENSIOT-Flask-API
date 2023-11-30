@@ -33,10 +33,7 @@ class User(db.Model, UserMixin):
     def serialize(self):
         return {
             'id': self.id,
-            'email': self.email,
-            'active': self.active,
-            'roles': [role.name for role in self.roles],
-            'fs_uniquifier': self.fs_uniquifier
+            'email': self.email
         }
 
 
