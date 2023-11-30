@@ -1,5 +1,5 @@
-from flask import abort, jsonify
-from app_setup import db, user_datastore, User
+from flask import abort
+from app_setup import User
 import http.client
 
 
@@ -8,10 +8,10 @@ def fetch_all_users():
     return users
 
 
-def fetch_user(user_id):
-    user = User.query.get(user_id)
+def fetch_user(user_email):
+    user = User.query.filter_by(email=user_email).first()
 
-    if user is None:
+    if not user:
         abort(http.client.BAD_REQUEST, "User not found")
     return user
 
