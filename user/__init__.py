@@ -1,8 +1,8 @@
 import http.client
 import os
 from flask import Blueprint, jsonify, request, abort
-from flask_login import  login_user
-from app_setup import user_datastore, db, security
+from flask_login import login_user
+from app_setup import user_datastore, db, security, Role
 from security import SCFlask
 from user.fetch_users import fetch_all_users, fetch_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -34,7 +34,6 @@ def register():
         user = user_datastore.create_user(
             email=request.json.get('email'),
             password=generate_password_hash(request.json.get('password')),
-            roles=[Rolename.USER.value]
         )
         db.session.commit()
     except Exception as e:
