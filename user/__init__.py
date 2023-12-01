@@ -31,7 +31,7 @@ def register():
             abort(http.client.BAD_REQUEST, "Access code is incorrect")
 
     try:
-        user_datastore.create_user(
+        user = user_datastore.create_user(
             email=request.json.get('email'),
             password=generate_password_hash(request.json.get('password')),
             roles=[Rolename.USER.value]
@@ -40,7 +40,7 @@ def register():
     except Exception as e:
         abort(http.client.BAD_REQUEST, "Something went wrong with storing user to database, check mail and password")
 
-    return jsonify("Created user"), 201
+    return jsonify(user.serialize()), 201
 
 
 @api.route("/login", methods=['POST'])
