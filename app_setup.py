@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
 
+from db.create_user_roles import create_roles
 
 load_dotenv()
 flask_test_env = os.getenv("FLASK_TEST_ENV")
@@ -59,5 +60,5 @@ security = Security(app, user_datastore)
 
 with app.app_context():
     db.create_all()
-
+    create_roles()
 
