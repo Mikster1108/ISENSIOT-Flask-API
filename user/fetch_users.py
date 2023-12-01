@@ -16,12 +16,3 @@ def fetch_user(user_email):
     return user
 
 
-def fetch_admin_users():
-    all_users = User.query.all()
-    admin_users = []
-    for u in all_users:
-        if "admin" in u.roles:
-            admin_users.append(u)
-
-    return admin_users
-

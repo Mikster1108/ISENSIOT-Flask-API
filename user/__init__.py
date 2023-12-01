@@ -2,7 +2,7 @@ import http.client
 import os
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_user
-from app_setup import user_datastore, db, security, Role
+from app_setup import user_datastore, db, security
 from security import SCFlask
 from user.fetch_users import fetch_all_users, fetch_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,14 +11,6 @@ from user.user_roles import Rolename, all_roles
 
 api = Blueprint('user', __name__)
 requires_authentication = SCFlask.requires_authentication
-
-
-@api.route("/index", methods=['GET'])
-@requires_authentication
-def index():
-    users = fetch_all_users()
-    serialized_users = [user.serialize() for user in users]
-    return jsonify(serialized_users), 200
 
 
 @api.route("/register", methods=['POST'])
