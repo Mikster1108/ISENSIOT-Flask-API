@@ -6,6 +6,8 @@ import os
 
 
 load_dotenv()
+flask_test_env = os.getenv("FLASK_TEST_ENV")
+
 app = Flask(__name__)
 
 app.config['SECURITY_PASSWORD_SALT'] = '112232223'
@@ -13,6 +15,16 @@ app.config['SECRET_KEY'] = 'ISENSIOT-GROEP10'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://{os.getenv("DB_USERNAME")}:' \
                                         f'{os.getenv("DB_PASSWORD")}@{os.getenv("DB_HOST")}:' \
                                         f'{os.getenv("DB_PORT")}/{os.getenv("DB_NAME")}'
+
+app.config['SQLALCHEMY_DATABASE_URI_TEST'] = 'sqlite:///:memory:'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation warning
+app.config['TESTING'] = True  # Enable testing mode
+app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
+
+if flask_test_env == "test":
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI=app.config['SQLALCHEMY_DATABASE_URI_TEST']
+    )
 
 db = SQLAlchemy(app)
 
