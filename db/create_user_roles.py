@@ -4,11 +4,13 @@ import sqlite3
 import mysql.connector
 from dotenv import load_dotenv
 
+from tests import in_testing_mode
+
 load_dotenv()
 
 
 def create_roles():
-    testing = os.getenv("FLASK_TEST_ENV") == "test"
+    testing = in_testing_mode()
     if testing:
         conn = sqlite3.connect(':memory:')
     else:
