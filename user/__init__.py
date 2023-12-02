@@ -2,7 +2,7 @@ import http.client
 import os
 from flask import Blueprint, jsonify, request, abort
 from flask_login import login_user
-from app_setup import user_datastore, db, security
+from app_setup import user_datastore, db, security, limiter
 from security import SCFlask
 from user.fetch_users import fetch_all_users, fetch_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,6 +14,7 @@ requires_authentication = SCFlask.requires_authentication
 
 
 @api.route("/register", methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     code = request.json.get('access_code')
     if not code:
@@ -35,6 +36,7 @@ def register():
 
 
 @api.route("/login", methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     email = request.json.get('email')
     password = request.json.get('password')

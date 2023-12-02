@@ -1,15 +1,25 @@
 from flask import Flask
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Security
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
 
 from db.create_user_roles import create_roles
+from tests import in_testing_mode
 
 load_dotenv()
 flask_test_env = os.getenv("FLASK_TEST_ENV")
 
 app = Flask(__name__)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["300 per day, 100 per hour"],
+    storage_uri="memory://"
+)
 
 app.config['SECURITY_PASSWORD_SALT'] = '112232223'
 app.config['SECRET_KEY'] = 'ISENSIOT-GROEP10'
@@ -22,10 +32,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation 
 app.config['TESTING'] = True  # Enable testing mode
 app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
 
-if flask_test_env == "test":
+if in_testing_mode():
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=app.config['SQLALCHEMY_DATABASE_URI_TEST']
     )
+    limiter.enabled = False  # Disable request limit during tests
+
 
 db = SQLAlchemy(app)
 
