@@ -1,6 +1,6 @@
 import os.path
 from datetime import datetime
-from moviepy.editor import VideoFileClip
+import cv2
 
 
 def filename_to_datetime(filename):
@@ -10,22 +10,28 @@ def filename_to_datetime(filename):
 
 def get_video_duration(file_path):
     try:
-        video_clip = VideoFileClip(file_path)
-        duration = video_clip.duration
+        video = cv2.VideoCapture(file_path)
+
+        frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_rate = video.get(cv2.CAP_PROP_FPS)
+
+        duration = frame_count / frame_rate
+
         return duration
     except Exception as e:
-        return None
+        return 0
+    finally:
+        video.release()
 
 
 def sort_videos(video_paths, query_filter=None):
-    try:
-        if query_filter == 'date':
-            sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=True)
-        elif query_filter == 'duration':
-            sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath))
-        else:
-            sorted_video_paths = video_paths
-    except Exception as e:
+    if query_filter == 'date':
+        # Newest video is the first one in the list
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=True)
+    elif query_filter == 'duration':
+        # Shortest video is the first one in the list
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath))
+    else:
         sorted_video_paths = video_paths
 
     return sorted_video_paths
