@@ -4,6 +4,7 @@ from security import SCFlask
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename
 
 from video.filter import sort_videos
+from video.validate_parameters import validate_filename
 
 api = Blueprint('video', __name__)
 requires_authentication = SCFlask.requires_authentication
@@ -50,6 +51,7 @@ def get_all_video_filenames():
 def get_video():
     api_url = request.url_root
     filename = request.args.get('filename')
+    fetch_video_path_by_filename(filename)  # Check if file exists before giving link
 
     response_data = {
         'video_link': f"{api_url}video/download?filename={filename}"
