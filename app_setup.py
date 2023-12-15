@@ -3,6 +3,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Security
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
@@ -13,6 +14,8 @@ load_dotenv()
 flask_test_env = os.getenv("FLASK_TEST_ENV")
 
 app = Flask(__name__)
+
+CORS(app)
 
 limiter = Limiter(
     get_remote_address,
