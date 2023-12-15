@@ -15,7 +15,7 @@ def fetch_all_video_paths():
 
         return files
     except FileNotFoundError:
-        abort(http.client.OK, f"No recordings available")
+        abort(http.client.BAD_REQUEST, f"No recordings available")
 
 
 def fetch_video_path_by_filename(filename):
