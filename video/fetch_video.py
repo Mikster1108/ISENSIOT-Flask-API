@@ -20,6 +20,8 @@ def fetch_all_video_paths():
 
 def fetch_video_path_by_filename(filename):
     try:
+        if not filename:
+            abort(http.client.BAD_REQUEST, f"No filename specified")
         validate_filename(filename)
 
         file_path = get_file_path(filename, video_footage_path)

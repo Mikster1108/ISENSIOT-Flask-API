@@ -50,7 +50,7 @@ def get_all_video_filenames():
 @requires_authentication
 def get_video():
     api_url = request.url_root
-    filename = request.args.get('filename')
+    filename = request.args.get('filename', default='')
     fetch_video_path_by_filename(filename)  # Check if file exists before giving link
 
     response_data = {
@@ -63,7 +63,7 @@ def get_video():
 @api.route('/download', methods=['GET'])
 @requires_authentication
 def download_video():
-    filename = request.args.get('filename')
+    filename = request.args.get('filename', default='')
 
     video_path = fetch_video_path_by_filename(filename)
     response = send_file(video_path, mimetype='video/mp4')
