@@ -15,7 +15,7 @@ def fetch_all_video_paths():
 
         return files
     except FileNotFoundError:
-        abort(http.client.BAD_REQUEST, f"No recordings available")
+        abort(http.client.INTERNAL_SERVER_ERROR, f"Not connected to NAS")
 
 
 def fetch_video_path_by_filename(filename):

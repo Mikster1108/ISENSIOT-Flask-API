@@ -3,12 +3,18 @@ from datetime import datetime
 import cv2
 
 
+video_durations_cache = {}
+
+
 def filename_to_datetime(filename):
     format_str = "%d-%m-%Y-%H-%M-%S.mp4"
     return datetime.strptime(filename, format_str)
 
 
 def get_video_duration(file_path):
+    if file_path in video_durations_cache:
+        return video_durations_cache[file_path]
+
     try:
         video = cv2.VideoCapture(file_path)
 
@@ -17,6 +23,7 @@ def get_video_duration(file_path):
 
         duration = frame_count / frame_rate
 
+        video_durations_cache[file_path] = duration
         return duration
     except Exception as e:
         return 0

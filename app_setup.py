@@ -73,6 +73,10 @@ user_roles = db.Table('user_roles',
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
+from video import fetch_all_video_paths, sort_videos  # Import here to prevent circular import
+video_paths = fetch_all_video_paths()
+sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
+
 with app.app_context():
     db.create_all()
     create_roles()
