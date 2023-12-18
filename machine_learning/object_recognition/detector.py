@@ -36,6 +36,7 @@ class Detector:
         cap = cv2.VideoCapture(self.videoPath)
         itemsFoundList = []
         activationItem = None
+        timestamps = []
 
         if (cap.isOpened() == False):
             print("Error opening file...")
@@ -59,7 +60,8 @@ class Detector:
 
                     if classLabel in self.filterList:
                         if classLabel not in itemsFoundList:
-                            itemsFoundList.insert(-1, str(classLabel))
+                            itemsFoundList.append(str(classLabel))
+                            timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
                         if activationItem is None:
                             activationItem = classLabel
 
