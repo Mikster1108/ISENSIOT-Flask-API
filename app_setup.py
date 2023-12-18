@@ -7,6 +7,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
+from common.error_handlers import bad_request, unauthorized, not_found, too_many_requests, internal_server_error
 from db.create_user_roles import create_roles
 from tests import in_testing_mode
 
@@ -58,10 +59,11 @@ class User(db.Model, UserMixin):
     roles = db.relationship('Role', secondary='user_roles')
     fs_uniquifier = db.Column(db.String(64), unique=True)
 
-    def serialize(self):
+    def serialize(self, token):
         return {
             'id': self.id,
-            'email': self.email
+            'email': self.email,
+            'token': token
         }
 
 
@@ -82,6 +84,13 @@ security = Security(app, user_datastore)
 from video import fetch_all_video_paths, sort_videos  # Import here to prevent circular import
 video_paths = fetch_all_video_paths()
 sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
+
+
+app.register_error_handler(400, bad_request)
+app.register_error_handler(401, unauthorized)
+app.register_error_handler(404, not_found)
+app.register_error_handler(429, too_many_requests)
+app.register_error_handler(500, internal_server_error)
 
 with app.app_context():
     db.create_all()

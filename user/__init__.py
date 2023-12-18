@@ -2,7 +2,6 @@ import http.client
 import os
 import sqlalchemy
 from flask import Blueprint, jsonify, request, abort
-from flask_login import login_user
 from app_setup import user_datastore, db, security, limiter
 from security import SCFlask
 from user.fetch_users import fetch_all_users, fetch_user
@@ -41,23 +40,27 @@ def register():
     except Exception as e:
         abort(http.client.BAD_REQUEST, "Something went wrong with storing user to database")
 
-    return jsonify(user.serialize()), 201
+    token = create_token(email, password)
+
+    return jsonify(user.serialize(token)), 201
 
 
 @api.route("/login", methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per minute")
 def login():
     email = request.json.get('email')
     password = request.json.get('password')
 
-    user = fetch_user(email)
-
-    if check_password_hash(user.password, password):
-        login_user(user)
-        token = security.remember_token_serializer.dumps(user.fs_uniquifier)
-
+    token = create_token(email, password)
+    if token:
         return jsonify({"token": token}), 200
     else:
         abort(http.client.UNAUTHORIZED, "Invalid credentials")
 
 
+def create_token(email, password):
+    user = fetch_user(email)
+
+    if check_password_hash(user.password, password):
+        token = security.remember_token_serializer.dumps(user.fs_uniquifier)
+    return token
