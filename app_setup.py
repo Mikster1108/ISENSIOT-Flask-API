@@ -65,6 +65,12 @@ class User(db.Model, UserMixin):
         }
 
 
+class Video(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), unique=True)
+    duration = db.Column(db.Integer)
+
+
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
     db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
