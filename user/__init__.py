@@ -59,8 +59,13 @@ def login():
 
 
 def create_token(email, password):
-    user = fetch_user(email)
+    try:
+        user = fetch_user(email)
+        if not user:
+            abort(http.client.NOT_FOUND, "User not found")
 
-    if check_password_hash(user.password, password):
-        token = security.remember_token_serializer.dumps(user.fs_uniquifier)
-    return token
+        if check_password_hash(user.password, password):
+            token = security.remember_token_serializer.dumps(user.fs_uniquifier)
+        return token
+    except Exception as e:
+        abort(http.client.BAD_REQUEST, "Incorrect password")
