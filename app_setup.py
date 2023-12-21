@@ -4,11 +4,13 @@ from flask_limiter.util import get_remote_address
 from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Security
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 import os
 
 from common.error_handlers import bad_request, unauthorized, not_found, too_many_requests, internal_server_error
 from db.create_user_roles import create_roles
+from machine_learning.object_recognition.detector_controller import run_analyzing_process
 from tests import in_testing_mode
 
 load_dotenv()
@@ -42,7 +44,6 @@ if in_testing_mode():
     )
     limiter.enabled = False  # Disable request limit during tests
 
-
 db = SQLAlchemy(app)
 
 
@@ -73,18 +74,26 @@ class Video(db.Model):
     duration = db.Column(db.Integer)
 
 
+class SensorData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    activation_item = db.Column(db.String(255))
+    item_found = db.Column(db.String(255))
+    timestamp_ms = db.Column(db.Float)
+    # needs to have a video column
+
+
 user_roles = db.Table('user_roles',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
-)
+                      db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                      db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+                      )
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
 from video import fetch_all_video_paths, sort_videos  # Import here to prevent circular import
+
 video_paths = fetch_all_video_paths()
 sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
-
 
 app.register_error_handler(400, bad_request)
 app.register_error_handler(401, unauthorized)
@@ -92,7 +101,20 @@ app.register_error_handler(404, not_found)
 app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
+
+def check_for_new_recordings():
+    run_analyzing_process("Raw-footage", "Video-recordings")
+
+
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(check_for_new_recordings, trigger="interval", minutes=10)
+    scheduler.start()
+
+
+# start_scheduler()
+check_for_new_recordings()
+
 with app.app_context():
     db.create_all()
     create_roles()
-

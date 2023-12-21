@@ -4,12 +4,14 @@ import numpy as np
 
 
 class Detector:
-    def __init__(self, videoPath, configPath, modelPath, classesPath, filterPath):
-        self.videoPath = videoPath
-        self.configPath = configPath
-        self.modelPath = modelPath
-        self.classesPath = classesPath
-        self.filterPath = filterPath
+    def __init__(self, video_path, config_path, model_path, classes_path, filter_path):
+        self.classesList = None
+        self.filterList = None
+        self.videoPath = video_path
+        self.configPath = config_path
+        self.modelPath = model_path
+        self.classesPath = classes_path
+        self.filterPath = filter_path
 
         #########
 
@@ -19,26 +21,25 @@ class Detector:
         self.net.setInputMean((127.5, 127.5, 127.5))
         self.net.setInputSwapRB(True)
 
-        self.readClasses()
-        self.readFilterList()
+        self.read_classes()
+        self.read_filter_list()
 
-    def readClasses(self):
+    def read_classes(self):
         with open(self.classesPath, 'r') as f:
             self.classesList = f.read().splitlines()
 
         self.classesList.insert(0, '__Background__')
 
-    def readFilterList(self):
+    def read_filter_list(self):
         with open(self.filterPath, 'r') as p:
             self.filterList = p.read().splitlines()
 
-    def onVideo(self):
+    def analyze_recording(self):
         cap = cv2.VideoCapture(self.videoPath)
         itemsFoundList = []
-        activationItem = None
         timestamps = []
 
-        if (cap.isOpened() == False):
+        if not cap.isOpened():
             print("Error opening file...")
             return
 
@@ -62,10 +63,8 @@ class Detector:
                         if classLabel not in itemsFoundList:
                             itemsFoundList.append(str(classLabel))
                             timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
-                        if activationItem is None:
-                            activationItem = classLabel
 
             (succes, image) = cap.read()
 
         cv2.destroyAllWindows()
-        return itemsFoundList, activationItem
+        return itemsFoundList, timestamps
