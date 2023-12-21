@@ -4,6 +4,7 @@ from flask_limiter.util import get_remote_address
 from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Security
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
 
@@ -35,6 +36,9 @@ app.config['SQLALCHEMY_DATABASE_URI_TEST'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation warning
 app.config['TESTING'] = True  # Enable testing mode
 app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
+
+
+socketio = SocketIO(app=app, cors_allowed_origins="*")
 
 if in_testing_mode():
     app.config.from_mapping(
@@ -95,4 +99,6 @@ app.register_error_handler(500, internal_server_error)
 with app.app_context():
     db.create_all()
     create_roles()
+
+
 
