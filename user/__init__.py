@@ -4,6 +4,7 @@ import sqlalchemy
 from flask import Blueprint, jsonify, request, abort
 from app_setup import user_datastore, db, security, limiter
 from security import SCFlask
+from user.exceptions import UserNotFoundException, InvalidEmailException, InvalidPasswordException
 from user.fetch_users import fetch_all_users, fetch_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from user.user_roles import Rolename, all_roles
@@ -26,15 +27,19 @@ def register():
         if code != os.getenv('ACCESS_CODE'):
             abort(http.client.BAD_REQUEST, "Access code is incorrect")
 
-    validate_email(email)
-    validate_password(password)
-
     try:
+        validate_email(email)
+        validate_password(password)
+
         user = user_datastore.create_user(
             email=email,
             password=generate_password_hash(password),
         )
         db.session.commit()
+    except InvalidEmailException:
+        abort(http.client.BAD_REQUEST, "Not a valid email")
+    except InvalidPasswordException:
+        abort(http.client.BAD_REQUEST, "Not a valid password, password needs to be 5 characters long with one uppercase and one lowercase letter")
     except sqlalchemy.exc.IntegrityError as e:
         abort(http.client.BAD_REQUEST, "Email already in use")
     except Exception as e:
@@ -61,11 +66,11 @@ def login():
 def create_token(email, password):
     try:
         user = fetch_user(email)
-        if not user:
-            abort(http.client.NOT_FOUND, "User not found")
 
         if check_password_hash(user.password, password):
             token = security.remember_token_serializer.dumps(user.fs_uniquifier)
         return token
-    except Exception as e:
+    except UserNotFoundException:
+        abort(http.client.NOT_FOUND, "User not found")
+    except Exception:
         abort(http.client.BAD_REQUEST, "Incorrect password")

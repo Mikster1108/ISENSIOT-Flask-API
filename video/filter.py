@@ -26,7 +26,7 @@ def get_video_duration(file_path):
         video_durations_cache[file_path] = duration
         return duration
     except Exception as e:
-        return 0
+        return None
     finally:
         video.release()
 

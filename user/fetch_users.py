@@ -1,6 +1,5 @@
-from flask import abort
 from app_setup import User
-import http.client
+from user.exceptions import UserNotFoundException
 
 
 def fetch_all_users():
@@ -12,7 +11,7 @@ def fetch_user(user_email):
     user = User.query.filter_by(email=user_email).first()
 
     if not user:
-        abort(http.client.BAD_REQUEST, "User not found")
+        raise UserNotFoundException
     return user
 
 
