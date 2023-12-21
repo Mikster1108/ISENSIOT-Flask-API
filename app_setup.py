@@ -76,15 +76,19 @@ class Video(db.Model):
 
 class SensorData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    activation_item = db.Column(db.String(255))
     item_found = db.Column(db.String(255))
     timestamp_ms = db.Column(db.Float)
-    # needs to have a video column
+    video = db.relationship('Video', secondary='video_data')
 
 
 user_roles = db.Table('user_roles',
                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+                      )
+
+video_data = db.Table('video_data',
+                      db.Column("video_id", db.Integer(), db.ForeignKey('video.id')),
+                      db.Column("sensor_data_id", db.Integer(), db.ForeignKey('sensor_data.id'))
                       )
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -112,8 +116,8 @@ def start_scheduler():
     scheduler.start()
 
 
-# start_scheduler()
-check_for_new_recordings()
+start_scheduler()
+# check_for_new_recordings()
 
 with app.app_context():
     db.create_all()

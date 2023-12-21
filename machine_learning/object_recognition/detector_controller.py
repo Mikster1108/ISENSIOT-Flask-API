@@ -27,10 +27,7 @@ def run_analyzing_process(raw_footage_dir_name, analyzed_footage_dir_name):
     detector_controller = DetectorController(os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), raw_footage_dir_name))
     new_recordings_list = detector_controller.get_new_recordings()
     for recording in new_recordings_list:
-        print("Starting analyzing process of " + recording)
         items_found_list, timestamps = detector_controller.analyze_recording(recording)
-        print("done analyzing " + recording + " with results:")
-        print(items_found_list, timestamps)
         src_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), raw_footage_dir_name, recording)
         dst_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), analyzed_footage_dir_name, recording)
         os.rename(src_path, dst_path)
