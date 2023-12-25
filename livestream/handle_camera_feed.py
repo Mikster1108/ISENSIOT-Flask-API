@@ -3,36 +3,33 @@ import cv2
 from app_setup import socketio
 
 
-streaming = False
-tasks = {}
+class CameraThread:
+    def __init__(self):
+        self.streaming = False
+        self.thread = None
 
+    def start(self):
+        self.streaming = True
+        self.thread = socketio.start_background_task(target=self.run)
 
-def start_camera_thread():
-    global streaming
-    streaming = True
-    tasks['camera_thread'] = True
-    print("Starting stream...")
+    def stop(self):
+        self.streaming = False
+        if self.thread:
+            self.thread.join()
+            self.thread = None
 
-    cap = cv2.VideoCapture(0)
-    print("Loading frames...")
+    def run(self):
+        print("Starting stream...")
+        cap = cv2.VideoCapture(0)
+        print("Loading frames...")
+        while self.streaming:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            _, buffer = cv2.imencode('.jpg', frame)
+            frame_data = base64.b64encode(buffer).decode('utf-8')
+            socketio.emit('frame', {'data': frame_data})
+            socketio.sleep(1 / 30)
+        print("Stopping stream")
+        cap.release()
 
-    while streaming:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        _, buffer = cv2.imencode('.jpg', frame)
-        frame_data = base64.b64encode(buffer).decode('utf-8')
-        socketio.emit('frame', {'data': frame_data})
-        socketio.sleep(1/30)
-    print("Stopping stream")
-    cap.release()
-
-
-def stop_camera_thread():
-    global streaming
-    streaming = False
-    tasks.pop('camera_thread')
-
-
-def check_if_thread_is_running(function_name):
-    return tasks.get(function_name)

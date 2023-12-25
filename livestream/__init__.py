@@ -1,11 +1,13 @@
 from flask import Blueprint
-from livestream.handle_camera_feed import check_if_thread_is_running, start_camera_thread, stop_camera_thread
+from livestream.handle_camera_feed import CameraThread
 from security import SCFlask
 from app_setup import socketio
 from flask_socketio import emit
 
 api = Blueprint('livestream', __name__)
 requires_authentication = SCFlask.requires_authentication
+
+camera_thread = CameraThread()
 
 
 @socketio.on('connect')
@@ -25,15 +27,17 @@ def handle_message(message):
 
 @socketio.on('start-stream')
 def handle_stream_request():
-    if not check_if_thread_is_running('camera_thread'):
-        socketio.start_background_task(target=start_camera_thread())
+    if not camera_thread.thread:
+        camera_thread.start()
+        emit('response', {'data': 'Stream is starting'})
     else:
         emit('response', {'data': 'Stream is already running'})
 
 
 @socketio.on('stop-stream')
 def handle_stop_stream_request():
-    if check_if_thread_is_running('camera_thread'):
-        stop_camera_thread()
+    if camera_thread.thread:
+        camera_thread.stop()
+        emit('response', {'data': 'Stream is stopping'})
     else:
         emit('stop_stream_response', {'data': 'No running stream at the moment'})
