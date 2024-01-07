@@ -1,6 +1,6 @@
 from functools import wraps
 import http.client
-from flask import abort, request, jsonify
+from flask import request, jsonify
 from flask_socketio import disconnect
 from itsdangerous import BadTimeSignature, BadSignature
 from app_setup import security, User
