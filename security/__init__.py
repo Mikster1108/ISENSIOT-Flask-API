@@ -9,7 +9,7 @@ class SCFlask:
 
     @classmethod
     def requires_authentication(cls, method):
-        """" Decorator to check if you're a registrated user """
+        """" Decorator to check if you're a registered user """
 
         @wraps(method)
         def wrapper(*args, **kwargs):
