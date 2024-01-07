@@ -6,7 +6,8 @@ def addListener(connect_id):
 
 
 def removeListener(connect_id):
-    socket_listeners.remove(connect_id)
+    if connect_id in socket_listeners:
+        socket_listeners.remove(connect_id)
 
 
 def getListenersAmount():
