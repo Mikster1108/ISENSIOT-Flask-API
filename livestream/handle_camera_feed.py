@@ -6,17 +6,17 @@ from app_setup import socketio
 class CameraThread:
     def __init__(self):
         self.streaming = False
-        self.thread = None
+        self.main_thread = None
 
     def start(self):
         self.streaming = True
-        self.thread = socketio.start_background_task(target=self.run)
+        self.main_thread = socketio.start_background_task(target=self.run)
 
     def stop(self):
         self.streaming = False
-        if self.thread:
-            self.thread.join()
-            self.thread = None
+        if self.main_thread:
+            self.main_thread.join()
+            self.main_thread = None
 
     def run(self):
         print("Starting stream...")
@@ -30,6 +30,5 @@ class CameraThread:
             frame_data = base64.b64encode(buffer).decode('utf-8')
             socketio.emit('frame', {'data': frame_data})
             socketio.sleep(1 / 30)
-        print("Stopping stream")
+        print("Stopping stream...")
         cap.release()
-
