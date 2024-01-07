@@ -1,17 +1,21 @@
-from flask import Blueprint, request
+import http.client
+
+from flask import Blueprint, request, jsonify
+from itsdangerous import BadTimeSignature, BadSignature
+
 from livestream.handle_camera_feed import CameraThread
 from livestream.socket_listeners import addListener, removeListener, getListenersAmount
-from security import SCFlask
+from security import validate_token, SCFlask
 from app_setup import socketio
-from flask_socketio import emit
+from flask_socketio import emit, disconnect
 
 api = Blueprint('livestream', __name__)
 requires_authentication = SCFlask.requires_authentication
-
 camera_thread = CameraThread()
 
 
 @socketio.on('connect')
+@requires_authentication
 def handle_connect():
     addListener(request.sid)
     emit('connect_response', {'data': 'Client connected!'})
