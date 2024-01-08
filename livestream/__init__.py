@@ -29,7 +29,7 @@ def handle_disconnect():
 @socketio.on('start-stream')
 def handle_stream_request():
     if not camera_thread.main_thread:
-        emit('start_stream_response', {'data': 'Stream is starting'})
+        emit('start_stream_response', {'data': 'Starting stream'})
         camera_thread.start()
     else:
         emit('start_stream_response', {'data': 'Stream is already running'})
