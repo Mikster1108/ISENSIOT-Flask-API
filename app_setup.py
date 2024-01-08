@@ -85,10 +85,7 @@ user_roles = db.Table('user_roles',
                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
                       )
 
-video_data = db.Table('video_data',
-                      db.Column("video_id", db.Integer(), db.ForeignKey('video.id')),
-                      db.Column("sensor_data_id", db.Integer(), db.ForeignKey('sensor_data.id'))
-                      )
+
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
@@ -118,8 +115,9 @@ def start_scheduler():
 
 
 #start_scheduler()
-check_for_new_recordings()  # temporarily here for faster testing
+#check_for_new_recordings()  # temporarily here for faster testing
 
 with app.app_context():
     db.create_all()
     create_roles()
+    check_for_new_recordings()

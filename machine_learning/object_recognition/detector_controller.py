@@ -1,6 +1,6 @@
 import os
 
-from app_setup import db, SensorData
+from app_setup import db, SensorData, Video
 from machine_learning.object_recognition.detector import Detector
 
 
@@ -30,17 +30,17 @@ def run_analyzing_process(raw_footage_dir_name, analyzed_footage_dir_name):
 
     for recording in new_recordings_list:
         items_found_list, timestamps = detector_controller.analyze_recording(recording)
-        # sensorData = SensorData(
-        #     item_found=items_found_list,
-        #     timestamp_ms=timestamps,
-        #     video=recording
-        # )
-        for item_found, timestamp in zip(items_found_list, timestamps):
-            sensorData = SensorData(
-                item_found=item_found,
-                timestamp_ms=timestamp,
-                video=recording)
-            db.session.add(sensorData)
+        sensorData = SensorData(
+            item_found=items_found_list,
+            timestamp_ms=timestamps,
+            video=[Video(filename=recording)]
+        )
+        # for item_found, timestamp in zip(items_found_list, timestamps):
+        #     sensorData = SensorData(
+        #         item_found=item_found,
+        #         timestamp_ms=timestamp,
+        #         video=recording)
+        db.session.add(sensorData)
 
         db.session.commit()
         src_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), raw_footage_dir_name, recording)
