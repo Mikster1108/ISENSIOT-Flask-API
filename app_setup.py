@@ -10,7 +10,6 @@ import os
 
 from common.error_handlers import bad_request, unauthorized, not_found, too_many_requests, internal_server_error
 from db.create_user_roles import create_roles
-from machine_learning.object_recognition.detector_controller import run_analyzing_process
 from tests import in_testing_mode
 
 load_dotenv()
@@ -105,6 +104,8 @@ app.register_error_handler(404, not_found)
 app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
+from machine_learning.object_recognition.detector_controller import run_analyzing_process
+
 
 def check_for_new_recordings():
     run_analyzing_process("Raw-footage", "Video-recordings")
@@ -116,8 +117,8 @@ def start_scheduler():
     scheduler.start()
 
 
-start_scheduler()
-# check_for_new_recordings()
+#start_scheduler()
+check_for_new_recordings()  # temporarily here for faster testing
 
 with app.app_context():
     db.create_all()
