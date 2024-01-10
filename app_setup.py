@@ -70,21 +70,21 @@ class User(db.Model, UserMixin):
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), unique=True)
-    duration = db.Column(db.Integer)
+    duration_sec = db.Column(db.Integer)
+    video_data = db.relationship("SensorData", backref='video', lazy=True)
 
 
 class SensorData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_found = db.Column(db.String(255))
     timestamp_ms = db.Column(db.Float)
-    video = db.relationship('Video', secondary='video_data')
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
 
 
 user_roles = db.Table('user_roles',
                       db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
                       db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
                       )
-
 
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -114,10 +114,7 @@ def start_scheduler():
     scheduler.start()
 
 
-#start_scheduler()
-#check_for_new_recordings()  # temporarily here for faster testing
-
 with app.app_context():
     db.create_all()
     create_roles()
-    check_for_new_recordings()
+    start_scheduler()
