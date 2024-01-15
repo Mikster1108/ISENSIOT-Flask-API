@@ -104,7 +104,7 @@ from machine_learning.object_recognition.detector_controller import run_analyzin
 
 
 def check_for_new_recordings():
-    run_analyzing_process("Raw-footage", "Video-recordings")
+    run_analyzing_process(raw_footage_dir_name="Raw-footage", analyzed_footage_dir_name="Video-recordings")
 
 
 def start_scheduler():

@@ -13,8 +13,7 @@ class Detector:
         self.classesPath = classes_path
         self.filterPath = filter_path
 
-        #########
-
+        # input settings for the detection model
         self.net = cv2.dnn_DetectionModel(self.modelPath, self.configPath)
         self.net.setInputSize(320, 320)
         self.net.setInputScale(1.0 / 127.5)
@@ -40,7 +39,6 @@ class Detector:
         timestamps = []
 
         if not cap.isOpened():
-            print("Error opening file...")
             return
 
         (succes, image) = cap.read()
