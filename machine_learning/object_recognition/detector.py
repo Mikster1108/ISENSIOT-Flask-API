@@ -66,5 +66,7 @@ class Detector:
 
             (succes, image) = cap.read()
 
-        cv2.destroyAllWindows()
-        return itemsFoundList, timestamps
+        frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        duration_sec = round(frames / fps)
+        return itemsFoundList, timestamps, duration_sec
