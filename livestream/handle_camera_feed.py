@@ -1,7 +1,10 @@
 import base64
+import os
 import cv2
-
 from app_setup import socketio
+
+
+STREAM_URL = os.getenv('RASPBERRY_PI_IP', 0)
 
 
 class CameraThread:
@@ -21,7 +24,7 @@ class CameraThread:
 
     def run(self):
         print("Starting stream...")
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(STREAM_URL)
         print("Loading frames...")
         while self.streaming:
             ret, frame = cap.read()
