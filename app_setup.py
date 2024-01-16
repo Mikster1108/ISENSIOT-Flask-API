@@ -107,13 +107,13 @@ def check_for_new_recordings():
     run_analyzing_process(raw_footage_dir_name="Raw-footage", analyzed_footage_dir_name="Video-recordings")
 
 
-def start_scheduler():
+def start_scheduler(time_interval_min):
     scheduler = BackgroundScheduler()
-    scheduler.add_job(check_for_new_recordings, trigger="interval", minutes=10)
+    scheduler.add_job(check_for_new_recordings, trigger="interval", minutes=time_interval_min)
     scheduler.start()
 
 
 with app.app_context():
     db.create_all()
     create_roles()
-    start_scheduler()
+    start_scheduler(10)

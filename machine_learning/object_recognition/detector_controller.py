@@ -48,6 +48,8 @@ def run_analyzing_process(raw_footage_dir_name, analyzed_footage_dir_name):
                     db.session.add(sensor_data)
 
                 db.session.commit()
+            except Exception:
+                pass
             finally:
                 src_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), raw_footage_dir_name, recording)
                 dst_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), analyzed_footage_dir_name, recording)
