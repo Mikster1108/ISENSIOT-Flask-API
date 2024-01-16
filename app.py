@@ -1,8 +1,8 @@
+from app_setup import app, socketio
 from user import api as user
 from sensordata import api as sensor_data
 from video import api as video
 from livestream import api as livestream
-from app_setup import app, socketio
 
 app.register_blueprint(user, url_prefix='/user')
 app.register_blueprint(sensor_data, url_prefix='/sensor_data')
