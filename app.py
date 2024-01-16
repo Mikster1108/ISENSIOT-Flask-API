@@ -8,4 +8,4 @@ app.register_blueprint(sensor_data, url_prefix='/sensor_data')
 app.register_blueprint(video, url_prefix='/video')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

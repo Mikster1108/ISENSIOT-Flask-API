@@ -4,6 +4,7 @@ from flask_limiter.util import get_remote_address
 from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Security
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 import os
 
@@ -42,7 +43,6 @@ if in_testing_mode():
     )
     limiter.enabled = False  # Disable request limit during tests
 
-
 db = SQLAlchemy(app)
 
 
@@ -70,21 +70,29 @@ class User(db.Model, UserMixin):
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), unique=True)
-    duration = db.Column(db.Integer)
+    duration_sec = db.Column(db.Integer)
+    video_data = db.relationship("SensorData", backref='video', lazy=True)
+
+
+class SensorData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_found = db.Column(db.String(255))
+    timestamp_ms = db.Column(db.Float)
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
 
 
 user_roles = db.Table('user_roles',
-    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
-)
+                      db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+                      db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+                      )
 
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
 from video import fetch_all_video_paths, sort_videos  # Import here to prevent circular import
+
 video_paths = fetch_all_video_paths()
 sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
-
 
 app.register_error_handler(400, bad_request)
 app.register_error_handler(401, unauthorized)
@@ -92,7 +100,20 @@ app.register_error_handler(404, not_found)
 app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
+from machine_learning.object_recognition.detector_controller import run_analyzing_process # Import here to prevent circular import
+
+
+def check_for_new_recordings():
+    run_analyzing_process(raw_footage_dir_name="Raw-footage", analyzed_footage_dir_name="Video-recordings")
+
+
+def start_scheduler(time_interval_min):
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(check_for_new_recordings, trigger="interval", minutes=time_interval_min)
+    scheduler.start()
+
+
 with app.app_context():
     db.create_all()
     create_roles()
-
+    start_scheduler(10)
