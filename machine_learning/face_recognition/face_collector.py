@@ -1,10 +1,11 @@
 import os
-
+from dotenv import load_dotenv
 import cv2
 
 video = cv2.VideoCapture(0)
 
-path = "C:\\Users\\ionmi\\Documents\\HSLeiden\\Jaar-3\\ISENSIOT-project\\Mock-NAS\\datasets-face-recognition"
+load_dotenv()
+path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "datasets-face-recognition")
 
 facedetect = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"

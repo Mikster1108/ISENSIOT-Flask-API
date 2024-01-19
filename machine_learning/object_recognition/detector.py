@@ -42,7 +42,9 @@ class Detector:
         facedetect = cv2.CascadeClassifier(
             cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
         )
-        name_list = ["", "Ion M."]  # TODO: make name_list more dynamic, rn its hardcoded
+
+        name_list = ["", "Ion M."]  # Name list of known faces
+
         recognizer = cv2.face.LBPHFaceRecognizer_create()
         recognizer.read("Trainer.yml")
 
@@ -76,11 +78,8 @@ class Detector:
             faces = facedetect.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
                 serial, conf = recognizer.predict(gray[y:y + h, x:x + w])
-                if conf > 50:
+                if conf > 55:
                     itemsFoundList.append(str(name_list[serial]))
-                    timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
-                else:
-                    itemsFoundList.append("Unknown Face")
                     timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
 
             (succes, image) = cap.read()

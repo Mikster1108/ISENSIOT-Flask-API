@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
 from PIL import Image
+from dotenv import load_dotenv
 import os
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
+load_dotenv()
 
-path = "C:\\Users\\ionmi\\Documents\\HSLeiden\\Jaar-3\\ISENSIOT-project\\Mock-NAS\\datasets-face-recognition"
-# os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "datasets-face-recognition")
+path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "datasets-face-recognition")
 
 
 def getImageID(path):
