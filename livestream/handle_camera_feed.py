@@ -4,7 +4,8 @@ import cv2
 from app_setup import socketio
 
 
-STREAM_URL = os.getenv('RASPBERRY_PI_IP', 0)
+STREAM_PORT = 8089
+STREAM_URL = f"{os.getenv('RASPBERRY_PI_IP')}:{STREAM_PORT}/0/stream" if os.getenv('RASPBERRY_PI_IP') else 0
 
 
 class CameraThread:
@@ -23,9 +24,7 @@ class CameraThread:
             self.main_thread = None
 
     def run(self):
-        print("Starting stream...")
         cap = cv2.VideoCapture(STREAM_URL)
-        print("Loading frames...")
         while self.streaming:
             ret, frame = cap.read()
             if not ret:
@@ -33,6 +32,5 @@ class CameraThread:
             _, buffer = cv2.imencode('.jpg', frame)
             frame_data = base64.b64encode(buffer).decode('utf-8')
             socketio.emit('frame', {'data': frame_data})
-            socketio.sleep(1 / 30)
-        print("Stopping stream...")
+            socketio.sleep(1 / 60)
         cap.release()
