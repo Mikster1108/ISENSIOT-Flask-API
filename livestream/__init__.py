@@ -1,5 +1,4 @@
 from flask import Blueprint, request
-
 from livestream.handle_camera_feed import CameraThread
 from livestream.socket_listeners import addListener, removeListener, getListenersAmount
 from security import SCFlask

@@ -2,7 +2,7 @@ import http.client
 import os
 import sqlalchemy
 from flask import Blueprint, jsonify, request, abort
-from app_setup import user_datastore, db, security, limiter
+from app_setup import user_datastore, db, limiter, security
 from security import SCFlask
 from user.exceptions import UserNotFoundException, InvalidEmailException, InvalidPasswordException
 from user.fetch_users import fetch_all_users, fetch_user
@@ -36,6 +36,9 @@ def register():
             password=generate_password_hash(password),
         )
         db.session.commit()
+
+        token = create_token(email, password)
+        return jsonify(user.serialize(token)), 201
     except InvalidEmailException:
         abort(http.client.BAD_REQUEST, "Not a valid email")
     except InvalidPasswordException:
@@ -45,9 +48,7 @@ def register():
     except Exception as e:
         abort(http.client.BAD_REQUEST, "Something went wrong with storing user to database")
 
-    token = create_token(email, password)
-
-    return jsonify(user.serialize(token)), 201
+    return jsonify({"error": "User could not be registered, try again"})
 
 
 @api.route("/login", methods=['POST'])
@@ -63,9 +64,11 @@ def login():
         abort(http.client.UNAUTHORIZED, "Invalid credentials")
 
 
+# This cant be moved because of circular import issues
 def create_token(email, password):
     try:
         user = fetch_user(email)
+        token = None
 
         if check_password_hash(user.password, password):
             token = security.remember_token_serializer.dumps(user.fs_uniquifier)

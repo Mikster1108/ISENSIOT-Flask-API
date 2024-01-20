@@ -15,7 +15,7 @@ class CameraThread:
 
     def start(self):
         self.streaming = True
-        self.main_thread = socketio.start_background_task(target=self.run)
+        self.main_thread = socketio.start_background_task(target=self.run)  # Stream starting process is not ran in bg
 
     def stop(self):
         self.streaming = False

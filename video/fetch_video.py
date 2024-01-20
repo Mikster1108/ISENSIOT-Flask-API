@@ -1,5 +1,4 @@
 import os
-
 from common.fetch_file import get_file_path, get_all_file_paths
 from video.exceptions import InvalidFilenameException, NotConnectedToNasException
 from video.validate_parameters import validate_filename

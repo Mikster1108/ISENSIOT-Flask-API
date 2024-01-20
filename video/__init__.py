@@ -4,7 +4,6 @@ from flask import Blueprint, send_file, request, jsonify, url_for, abort
 from security import SCFlask
 from video.exceptions import NotConnectedToNasException, InvalidFilenameException
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename
-
 from video.filter import sort_videos
 from video.validate_parameters import validate_filename
 
