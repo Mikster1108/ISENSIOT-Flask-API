@@ -38,6 +38,16 @@ class Detector:
         itemsFoundList = []
         timestamps = []
 
+        # face recognition data
+        facedetect = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        )
+
+        name_list = ["", "Ion M."]  # Name list of known faces
+
+        recognizer = cv2.face.LBPHFaceRecognizer_create()
+        recognizer.read("Trainer.yml")
+
         if not cap.isOpened():
             return
 
@@ -50,6 +60,8 @@ class Detector:
             confidences = list(np.array(confidences).reshape(1, -1)[0])
             confidences = list(map(float, confidences))
 
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # grayscale image for better face recognition accuracy
+
             bboxIdx = cv2.dnn.NMSBoxes(bboxs, confidences, score_threshold=0.5, nms_threshold=0.2)
 
             if len(bboxIdx) != 0:
@@ -61,6 +73,14 @@ class Detector:
                         if classLabel not in itemsFoundList:
                             itemsFoundList.append(str(classLabel))
                             timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
+
+            # face recognition
+            faces = facedetect.detectMultiScale(gray, 1.3, 5)
+            for (x, y, w, h) in faces:
+                serial, conf = recognizer.predict(gray[y:y + h, x:x + w])
+                if conf > 55:
+                    itemsFoundList.append(str(name_list[serial]))
+                    timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
 
             (succes, image) = cap.read()
 
