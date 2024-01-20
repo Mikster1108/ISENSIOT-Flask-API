@@ -5,6 +5,7 @@ from flask_security import SQLAlchemyUserDatastore, RoleMixin, UserMixin, Securi
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
 
@@ -37,11 +38,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation 
 app.config['TESTING'] = True  # Enable testing mode
 app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
 
+
+socketio = SocketIO(app=app, cors_allowed_origins="*")
+
 if in_testing_mode():
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=app.config['SQLALCHEMY_DATABASE_URI_TEST']
     )
     limiter.enabled = False  # Disable request limit during tests
+
 
 db = SQLAlchemy(app)
 
@@ -89,10 +94,17 @@ user_roles = db.Table('user_roles',
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
-from video import fetch_all_video_paths, sort_videos  # Import here to prevent circular import
+# Import here to prevent circular import
+from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException
 
-video_paths = fetch_all_video_paths()
-sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
+try:
+    video_paths = fetch_all_video_paths()
+    sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
+except NotConnectedToNasException:
+    print("WARNING: Not connected to NAS, the Flask server cant function well without this.")
+except InvalidFilenameException:
+    print("WARNING: Some filenames are invalid, correct the filenames as soon as possible.")
+
 
 app.register_error_handler(400, bad_request)
 app.register_error_handler(401, unauthorized)

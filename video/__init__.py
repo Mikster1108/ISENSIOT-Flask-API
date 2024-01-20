@@ -1,8 +1,9 @@
 import os
-from flask import Blueprint, send_file, request, jsonify, url_for
+import http.client
+from flask import Blueprint, send_file, request, jsonify, url_for, abort
 from security import SCFlask
+from video.exceptions import NotConnectedToNasException, InvalidFilenameException
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename
-
 from video.filter import sort_videos
 from video.validate_parameters import validate_filename
 
@@ -20,7 +21,17 @@ def get_all_video_filenames():
     page = request.args.get('page', default=1, type=int)
     query_filter = request.args.get('filter')
 
-    video_paths = fetch_all_video_paths()
+    try:
+        video_paths = fetch_all_video_paths()
+    except NotConnectedToNasException as e:
+        abort(http.client.INTERNAL_SERVER_ERROR, e.message)
+    except InvalidFilenameException as e:
+        abort(http.client.BAD_REQUEST, e.message)
+    except FileNotFoundError:
+        abort(http.client.BAD_REQUEST, f"File not found")
+    except IsADirectoryError:
+        abort(http.client.BAD_REQUEST, f"Specified file was a directory")
+
     sorted_videos = sort_videos(video_paths=video_paths, query_filter=query_filter)
     total_items = len(sorted_videos)
 
@@ -51,7 +62,15 @@ def get_all_video_filenames():
 def get_video():
     api_url = request.url_root
     filename = request.args.get('filename', default='')
-    fetch_video_path_by_filename(filename)  # Check if file exists before giving link
+
+    try:
+        fetch_video_path_by_filename(filename)  # Check if file exists before giving link
+    except InvalidFilenameException as e:
+        abort(http.client.BAD_REQUEST, e.message)
+    except FileNotFoundError:
+        abort(http.client.BAD_REQUEST, f"File not found")
+    except IsADirectoryError:
+        abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
     response_data = {
         'video_link': f"{api_url}video/download?filename={filename}"
@@ -65,7 +84,15 @@ def get_video():
 def download_video():
     filename = request.args.get('filename', default='')
 
-    video_path = fetch_video_path_by_filename(filename)
+    try:
+        video_path = fetch_video_path_by_filename(filename)
+    except InvalidFilenameException as e:
+        abort(http.client.BAD_REQUEST, e.message)
+    except FileNotFoundError:
+        abort(http.client.BAD_REQUEST, f"File not found")
+    except IsADirectoryError:
+        abort(http.client.BAD_REQUEST, f"Specified file was a directory")
+
     response = send_file(video_path, mimetype='video/mp4')
 
     return response

@@ -22,7 +22,10 @@ class DetectorController:
         return items_found_list, timestamps, duration_sec
 
     def get_new_recordings(self):
-        return common.fetch_file.get_all_file_paths(self.video_directory)
+        try:
+            return common.fetch_file.get_all_file_paths(self.video_directory)
+        except FileNotFoundError:
+            return []
 
 
 def run_analyzing_process(raw_footage_dir_name, analyzed_footage_dir_name):

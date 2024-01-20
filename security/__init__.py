@@ -1,35 +1,46 @@
 from functools import wraps
 import http.client
-from flask import abort, request
-from itsdangerous import BadTimeSignature
+from flask import request, jsonify
+from flask_socketio import disconnect
+from itsdangerous import BadTimeSignature, BadSignature
 from app_setup import security, User
+
+
+def validate_token(token):
+    try:
+        token_payload = security.remember_token_serializer.loads(token)
+        user = User.query.filter_by(fs_uniquifier=token_payload).first()
+        return bool(user)
+    except BadSignature:
+        raise
 
 
 class SCFlask:
 
     @classmethod
     def requires_authentication(cls, method):
-        """" Decorator to check if you're a registrated user """
+        """" Decorator to check if you're a registered user """
 
         @wraps(method)
         def wrapper(*args, **kwargs):
-            request_token = request.headers.get("Authorization")
-            if not request_token:
-                abort(http.client.UNAUTHORIZED, "No token")
-
-            request_token = request_token.split("Bearer ")[1]  # Remove "Bearer" part from authorization
-            authorized = False
+            if request.headers.get("Authorization"):
+                request_token = request.headers.get("Authorization")
+                request_token = request_token.split("Bearer ")[1]  # Remove "Bearer" part from authorization
+            elif request.args.get('token'):
+                request_token = request.args.get('token')
+            else:
+                disconnect()
+                return jsonify({'error': 'No token'}), http.client.UNAUTHORIZED
 
             try:
-                token_payload = security.remember_token_serializer.loads(request_token)
-                user = User.query.filter_by(fs_uniquifier=token_payload).first()
-                if user:
-                    authorized = True
+                authorized = validate_token(request_token)
             except BadTimeSignature as e:
-                abort(http.client.BAD_REQUEST, "Invalid token")
+                disconnect()
+                return jsonify({'error': 'Invalid token'}), http.client.UNAUTHORIZED
 
             if not authorized:
-                abort(http.client.UNAUTHORIZED, "Not authorized")
+                disconnect()
+                return jsonify({'error': 'Not authorized'}), http.client.UNAUTHORIZED
             return method(*args, **kwargs)
 
         return wrapper
