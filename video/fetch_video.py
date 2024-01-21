@@ -3,13 +3,16 @@ from common.fetch_file import get_file_path, get_all_file_paths
 from video.exceptions import InvalidFilenameException, NotConnectedToNasException
 from video.validate_parameters import validate_filename
 
-video_directory_name = "Video-recordings"
-video_footage_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), video_directory_name)
+VIDEO_DIRECTORY_NAME = "Video-recordings"
+VIDEO_PREVIEW_DIRECTORY_NAME = "Video-previews"
+
+VIDEO_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), VIDEO_DIRECTORY_NAME)
+VIDEO_PREVIEW_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), VIDEO_PREVIEW_DIRECTORY_NAME)
 
 
 def fetch_all_video_paths():
     try:
-        files = [fetch_video_path_by_filename(filename) for filename in get_all_file_paths(video_footage_path)]
+        files = [fetch_video_path_by_filename(filename) for filename in get_all_file_paths(VIDEO_FOOTAGE_PATH)]
 
         return files
     except FileNotFoundError:
@@ -22,7 +25,7 @@ def fetch_video_path_by_filename(filename):
             raise InvalidFilenameException(message="Empty filename")
         validate_filename(filename)
 
-        file_path = get_file_path(filename, video_footage_path)
+        file_path = get_file_path(filename=filename, target_directory=VIDEO_FOOTAGE_PATH)
 
         return file_path
     except FileNotFoundError:
@@ -33,3 +36,18 @@ def fetch_video_path_by_filename(filename):
         raise
 
 
+def fetch_video_preview(filename):
+    try:
+        if not filename:
+            return None
+        validate_filename(filename)
+        file_path = get_file_path(filename=filename, target_directory=VIDEO_PREVIEW_PATH)
+
+        return file_path
+    # Return None because preview will be generated if not exists
+    except FileNotFoundError:
+        return None
+    except IsADirectoryError:
+        return None
+    except InvalidFilenameException:
+        return None
