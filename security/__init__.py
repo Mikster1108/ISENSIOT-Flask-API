@@ -3,7 +3,7 @@ import http.client
 from flask import request, jsonify
 from flask_socketio import disconnect
 from itsdangerous import BadTimeSignature, BadSignature
-from app_setup import security, User
+from app_setup import security, User, socketio
 
 
 def validate_token(token):
@@ -29,7 +29,11 @@ class SCFlask:
             elif request.args.get('token'):
                 request_token = request.args.get('token')
             else:
-                disconnect()
+                # todo: check properly if user is connected
+                try:
+                    disconnect()
+                except Exception:
+                    pass
                 return jsonify({'error': 'No token'}), http.client.UNAUTHORIZED
 
             try:
