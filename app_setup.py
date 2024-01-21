@@ -95,7 +95,8 @@ user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
 # Import here to prevent circular import
-from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException
+from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException, \
+    generate_video_preview
 
 try:
     video_paths = fetch_all_video_paths()
@@ -113,15 +114,22 @@ app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
 from machine_learning.object_recognition.detector_controller import run_analyzing_process # Import here to prevent circular import
+from video.fetch_video import VIDEO_FOOTAGE_PATH
+from common.fetch_file import get_all_file_paths
 
 
 def check_for_new_recordings():
     run_analyzing_process(raw_footage_dir_name="Raw-footage", analyzed_footage_dir_name="Video-recordings")
 
 
+def generate_preview_for_recent_recordings():
+    [(generate_video_preview(file)) for file in get_all_file_paths(VIDEO_FOOTAGE_PATH)]
+
+
 def start_scheduler(time_interval_min):
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_for_new_recordings, trigger="interval", minutes=time_interval_min)
+    scheduler.add_job(generate_preview_for_recent_recordings, trigger="interval", minutes=2)
     scheduler.start()
 
 

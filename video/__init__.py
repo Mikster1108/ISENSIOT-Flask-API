@@ -102,7 +102,8 @@ def download_video():
 def generate_preview():
     video_name = request.args.get('filename', default='')
     try:
-        response = generate_video_preview(video_name)
+        preview_path = generate_video_preview(video_name)
+        response = send_file(preview_path, mimetype='image/png')
 
         return response
     except InvalidFilenameException as e:
