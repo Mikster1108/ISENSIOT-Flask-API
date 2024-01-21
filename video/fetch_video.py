@@ -44,10 +44,9 @@ def fetch_video_preview(filename):
         file_path = get_file_path(filename=filename, target_directory=VIDEO_PREVIEW_PATH)
 
         return file_path
-    # Return None because preview will be generated if not exists
     except FileNotFoundError:
-        return None
+        raise FileNotFoundError
     except IsADirectoryError:
-        return None
+        raise IsADirectoryError
     except InvalidFilenameException:
-        return None
+        raise

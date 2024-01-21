@@ -1,12 +1,12 @@
 import os
 import http.client
-import cv2
 from flask import Blueprint, send_file, request, jsonify, url_for, abort
 from security import SCFlask
-from video.exceptions import NotConnectedToNasException, InvalidFilenameException
+from video.exceptions import NotConnectedToNasException, InvalidFilenameException, FileCouldNotBeOpened
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename, fetch_video_preview
 from video.filter import sort_videos
 from video.validate_parameters import validate_filename
+from video.video_preview import generate_video_preview
 
 api = Blueprint('video', __name__)
 requires_authentication = SCFlask.requires_authentication
@@ -101,35 +101,15 @@ def download_video():
 @requires_authentication
 def generate_preview():
     video_name = request.args.get('filename', default='')
-    video_preview_name = f"{video_name.split('.')[0]}.png"
     try:
-        video_preview_path = fetch_video_preview(video_preview_name)
-        if video_preview_path:
-            response = send_file(video_preview_path, mimetype='image/png')
+        response = generate_video_preview(video_name)
 
-            return response
-
-        video_path = fetch_video_path_by_filename(video_name)
-        if not os.path.exists(video_path):
-            abort(http.client.BAD_REQUEST, "Video file not found")
-
-        cap = cv2.VideoCapture(video_path)
-        ret, frame = cap.read()
-        cap.release()
-
-        if not ret:
-            abort(http.client.INTERNAL_SERVER_ERROR, "Could not read the video, file might be damaged or corrupted")
-
-        preview_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), f"/Video-previews/{video_preview_name}")
-        cv2.imwrite(preview_path, frame)
-
+        return response
     except InvalidFilenameException as e:
         abort(http.client.BAD_REQUEST, e.message)
     except FileNotFoundError:
         abort(http.client.BAD_REQUEST, f"File not found")
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
-
-    response = send_file(preview_path, mimetype='image/png')
-
-    return response
+    except FileCouldNotBeOpened as e:
+        abort(http.client.INTERNAL_SERVER_ERROR, e.message)
