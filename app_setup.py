@@ -37,7 +37,7 @@ app.config['SQLALCHEMY_DATABASE_URI_TEST'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation warning
 app.config['TESTING'] = True  # Enable testing mode
 app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
-app.config['DEFAULT_VIDEO_EXTENSION'] = 'mkv'
+app.config['DEFAULT_VIDEO_EXTENSION'] = 'mp4'
 
 
 socketio = SocketIO(app=app, cors_allowed_origins="*")
@@ -98,6 +98,18 @@ security = Security(app, user_datastore)
 # Import here to prevent circular import
 from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException, \
     generate_video_preview
+from video.fetch_video import VIDEO_FOOTAGE_PATH, VIDEO_PREVIEW_PATH
+from common.fetch_file import get_all_file_paths
+
+
+RAW_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Raw-footage")
+if not os.path.exists(RAW_FOOTAGE_PATH):
+    os.mkdir(RAW_FOOTAGE_PATH)
+if not os.path.exists(VIDEO_FOOTAGE_PATH):
+    os.mkdir(VIDEO_FOOTAGE_PATH)
+if not os.path.exists(VIDEO_PREVIEW_PATH):
+    os.mkdir(VIDEO_PREVIEW_PATH)
+
 
 try:
     video_paths = fetch_all_video_paths()
@@ -115,8 +127,6 @@ app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
 from machine_learning.object_recognition.detector_controller import run_analyzing_process # Import here to prevent circular import
-from video.fetch_video import VIDEO_FOOTAGE_PATH
-from common.fetch_file import get_all_file_paths
 
 
 def check_for_new_recordings():
