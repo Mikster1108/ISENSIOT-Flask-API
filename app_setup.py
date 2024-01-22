@@ -23,7 +23,7 @@ CORS(app)
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["300 per day, 100 per hour"],
+    default_limits=["30000 per day, 10000 per hour"],
     storage_uri="memory://"
 )
 
@@ -37,6 +37,7 @@ app.config['SQLALCHEMY_DATABASE_URI_TEST'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Silence the deprecation warning
 app.config['TESTING'] = True  # Enable testing mode
 app.config['SQLALCHEMY_EXPIRE_ON_COMMIT'] = False
+app.config['DEFAULT_VIDEO_EXTENSION'] = 'mkv'
 
 
 socketio = SocketIO(app=app, cors_allowed_origins="*")

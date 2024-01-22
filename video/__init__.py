@@ -95,7 +95,7 @@ def download_video():
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
-    response = send_file(video_path, mimetype='video/mp4')
+    response = send_file(video_path, mimetype='video')
 
     return response
 

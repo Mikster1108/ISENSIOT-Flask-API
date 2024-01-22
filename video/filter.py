@@ -2,12 +2,14 @@ import os.path
 from datetime import datetime
 import cv2
 
+from app_setup import app
 
 video_durations_cache = {}
+ALLOWED_EXTENSIONS = ['mp4', 'mkv', 'wmv', 'webm', 'png']
 
 
 def filename_to_datetime(filename):
-    format_str = "%d-%m-%Y-%H-%M-%S.mp4"
+    format_str = f"%d-%m-%Y-%H-%M-%S.{app.config['DEFAULT_VIDEO_EXTENSION']}"
     return datetime.strptime(filename, format_str)
 
 

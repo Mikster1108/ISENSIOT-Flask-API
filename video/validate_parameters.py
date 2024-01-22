@@ -2,7 +2,7 @@ import re
 from video.exceptions import InvalidFilenameException
 
 
-ALLOWED_EXTENSIONS = ['mp4', 'png']
+ALLOWED_EXTENSIONS = ['mp4', 'mkv', 'wmv', 'webm', 'png']
 
 
 def validate_filename(filename):
