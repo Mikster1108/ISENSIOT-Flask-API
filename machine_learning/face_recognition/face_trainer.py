@@ -28,5 +28,6 @@ def getImageID(path):
 
 IDs, facedata = getImageID(path)
 recognizer.train(facedata, np.array(IDs))
-recognizer.write("Trainer.yml")
+path_to_trainer = os.path.join("../object_recognition/model_data", "Trained_faces.yml")
+recognizer.write(path_to_trainer)
 cv2.destroyAllWindows()

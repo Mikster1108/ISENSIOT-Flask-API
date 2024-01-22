@@ -1,3 +1,5 @@
+import os
+
 import cv2
 
 import numpy as np
@@ -46,7 +48,8 @@ class Detector:
         name_list = ["", "Ion M."]  # Name list of known faces
 
         recognizer = cv2.face.LBPHFaceRecognizer_create()
-        recognizer.read("Trainer.yml")
+        path_to_trainer = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_data", "Trained_faces.yml")
+        recognizer.read(path_to_trainer)
 
         if not cap.isOpened():
             return
