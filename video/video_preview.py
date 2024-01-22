@@ -27,7 +27,8 @@ def generate_video_preview(video_filename):
         if not ret:
             raise FileCouldNotBeOpened
 
-        preview_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), f"/Video-previews/{video_preview_name}")
+        preview_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Video-previews")
+        preview_path = os.path.join(preview_path, video_preview_name)
         cv2.imwrite(preview_path, frame)
 
         return preview_path
