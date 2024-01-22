@@ -2,6 +2,7 @@ import os
 import http.client
 from flask import Blueprint, send_file, request, jsonify, url_for, abort
 from security import SCFlask
+from sensordata.fetch_sensordata import fetch_video_sensordata
 from video.exceptions import NotConnectedToNasException, InvalidFilenameException, FileCouldNotBeOpened
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename, fetch_video_preview, \
     fetch_video_duration
@@ -73,9 +74,18 @@ def get_video():
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
     video_duration_sec = fetch_video_duration(filename)
+    raw_data = fetch_video_sensordata(filename)
+    video_analyses_data = []
+    for data in raw_data:
+        video_analyses_data.append({
+            "timestamp_ms": data.timestamp_ms,
+            "item_found": data.item_found
+        })
+
     response_data = {
         'video_link': f"{api_url}video/download?filename={filename}",
-        'duration': video_duration_sec
+        'duration': video_duration_sec,
+        'analysis_data': video_analyses_data
     }
 
     return jsonify(response_data), 200
