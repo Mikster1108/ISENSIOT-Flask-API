@@ -103,12 +103,16 @@ from common.fetch_file import get_all_file_paths
 
 
 RAW_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Raw-footage")
+DATASET_FACE_RECOGNITION_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "datasets-face-recognition")
+
 if not os.path.exists(RAW_FOOTAGE_PATH):
     os.mkdir(RAW_FOOTAGE_PATH)
 if not os.path.exists(VIDEO_FOOTAGE_PATH):
     os.mkdir(VIDEO_FOOTAGE_PATH)
 if not os.path.exists(VIDEO_PREVIEW_PATH):
     os.mkdir(VIDEO_PREVIEW_PATH)
+if not os.path.exists(DATASET_FACE_RECOGNITION_PATH):
+    os.mkdir(DATASET_FACE_RECOGNITION_PATH)
 
 
 try:
