@@ -17,6 +17,7 @@ def get_video_duration(file_path):
     if file_path in video_durations_cache:
         return video_durations_cache[file_path]
 
+    video = None
     try:
         video = cv2.VideoCapture(file_path)
 
@@ -30,7 +31,8 @@ def get_video_duration(file_path):
     except Exception as e:
         return None
     finally:
-        video.release()
+        if video:
+            video.release()
 
 
 # Reverse = True gives ascending order
