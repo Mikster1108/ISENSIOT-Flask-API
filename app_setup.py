@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
 import os
-
+from common.fetch_file import get_all_file_paths
 from common.error_handlers import bad_request, unauthorized, not_found, too_many_requests, internal_server_error
 from db.create_user_roles import create_roles
 from tests import in_testing_mode
@@ -95,33 +95,11 @@ user_roles = db.Table('user_roles',
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
 
-# Import here to prevent circular import
-from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException, \
-    generate_video_preview
-from video.fetch_video import VIDEO_FOOTAGE_PATH, VIDEO_PREVIEW_PATH
-from common.fetch_file import get_all_file_paths
 
-
+VIDEO_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Video-recordings")
+VIDEO_PREVIEW_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Video-previews")
 RAW_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "Raw-footage")
 DATASET_FACE_RECOGNITION_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), "datasets-face-recognition")
-
-if not os.path.exists(RAW_FOOTAGE_PATH):
-    os.mkdir(RAW_FOOTAGE_PATH)
-if not os.path.exists(VIDEO_FOOTAGE_PATH):
-    os.mkdir(VIDEO_FOOTAGE_PATH)
-if not os.path.exists(VIDEO_PREVIEW_PATH):
-    os.mkdir(VIDEO_PREVIEW_PATH)
-if not os.path.exists(DATASET_FACE_RECOGNITION_PATH):
-    os.mkdir(DATASET_FACE_RECOGNITION_PATH)
-
-
-try:
-    video_paths = fetch_all_video_paths()
-    sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
-except NotConnectedToNasException:
-    print("WARNING: Not connected to NAS, the Flask server cant function well without this.")
-except InvalidFilenameException:
-    print("WARNING: Some filenames are invalid, correct the filenames as soon as possible.")
 
 
 app.register_error_handler(400, bad_request)
@@ -130,7 +108,34 @@ app.register_error_handler(404, not_found)
 app.register_error_handler(429, too_many_requests)
 app.register_error_handler(500, internal_server_error)
 
-from machine_learning.object_recognition.detector_controller import run_analyzing_process # Import here to prevent circular import
+
+# Import here to prevent circular import
+from machine_learning.object_recognition.detector_controller import run_analyzing_process
+from video import fetch_all_video_paths, sort_videos, NotConnectedToNasException, InvalidFilenameException, generate_video_preview
+
+
+def generate_folders():
+    try:
+        if not os.path.exists(RAW_FOOTAGE_PATH):
+            os.mkdir(RAW_FOOTAGE_PATH)
+        if not os.path.exists(VIDEO_FOOTAGE_PATH):
+            os.mkdir(VIDEO_FOOTAGE_PATH)
+        if not os.path.exists(VIDEO_PREVIEW_PATH):
+            os.mkdir(VIDEO_PREVIEW_PATH)
+        if not os.path.exists(DATASET_FACE_RECOGNITION_PATH):
+            os.mkdir(DATASET_FACE_RECOGNITION_PATH)
+    except FileNotFoundError:
+        print("WARNING: Not connected to NAS, the Flask server cant function well without this.")
+
+
+def fill_video_duration_cache():
+    try:
+        video_paths = fetch_all_video_paths()
+        sort_videos(video_paths=video_paths, query_filter='duration')  # Fill duration cache
+    except NotConnectedToNasException:
+        print("WARNING: Not connected to NAS, the Flask server cant function well without this.")
+    except InvalidFilenameException:
+        print("WARNING: Some filenames are invalid, correct the filenames as soon as possible.")
 
 
 def check_for_new_recordings():
@@ -151,4 +156,6 @@ def start_scheduler(time_interval_min):
 with app.app_context():
     db.create_all()
     create_roles()
+    generate_folders()
+    fill_video_duration_cache()
     start_scheduler(10)
