@@ -2,12 +2,14 @@ import os.path
 from datetime import datetime
 import cv2
 
+from app_setup import app
 
 video_durations_cache = {}
+ALLOWED_EXTENSIONS = ['mp4', 'mkv', 'wmv', 'webm', 'png']
 
 
 def filename_to_datetime(filename):
-    format_str = "%d-%m-%Y-%H-%M-%S.mp4"
+    format_str = f"%d-%m-%Y-%H-%M-%S.{app.config['DEFAULT_VIDEO_EXTENSION']}"
     return datetime.strptime(filename, format_str)
 
 
@@ -15,6 +17,7 @@ def get_video_duration(file_path):
     if file_path in video_durations_cache:
         return video_durations_cache[file_path]
 
+    video = None
     try:
         video = cv2.VideoCapture(file_path)
 
@@ -28,16 +31,16 @@ def get_video_duration(file_path):
     except Exception as e:
         return None
     finally:
-        video.release()
+        if video:
+            video.release()
 
 
-def sort_videos(video_paths, query_filter=None):
+# Reverse = True gives ascending order
+def sort_videos(video_paths, query_filter=None, reverse=True):
     if query_filter == 'date':
-        # Newest video is the first one in the list
-        sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=True)
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=reverse)
     elif query_filter == 'duration':
-        # Shortest video is the first one in the list
-        sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath))
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath), reverse=reverse)
     else:
         sorted_video_paths = video_paths
 

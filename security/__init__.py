@@ -29,7 +29,10 @@ class SCFlask:
             elif request.args.get('token'):
                 request_token = request.args.get('token')
             else:
-                disconnect()
+                try:
+                    disconnect()
+                except Exception:
+                    pass
                 return jsonify({'error': 'No token'}), http.client.UNAUTHORIZED
 
             try:

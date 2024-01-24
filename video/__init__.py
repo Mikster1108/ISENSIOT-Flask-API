@@ -2,17 +2,18 @@ import os
 import http.client
 from flask import Blueprint, send_file, request, jsonify, url_for, abort
 from security import SCFlask
-from video.exceptions import NotConnectedToNasException, InvalidFilenameException
-from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename
+from sensordata.fetch_sensordata import fetch_video_sensordata
+from video.exceptions import NotConnectedToNasException, InvalidFilenameException, FileCouldNotBeOpened
+from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename, fetch_video_preview, \
+    fetch_video_duration
 from video.filter import sort_videos
-from video.validate_parameters import validate_filename
+from video.validate_parameters import validate_filename, validate_boolean_value
+from video.video_preview import generate_video_preview
 
 api = Blueprint('video', __name__)
 requires_authentication = SCFlask.requires_authentication
 
 VIDEOS_PER_PAGE = 8
-temp_zip_file = os.path.join("Temporary-zip-storage", "data.zip")
-zip_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), temp_zip_file)
 
 
 @api.route('/all', methods=['GET'])
@@ -20,6 +21,7 @@ zip_path = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), temp_zip_file)
 def get_all_video_filenames():
     page = request.args.get('page', default=1, type=int)
     query_filter = request.args.get('filter')
+    reverse = request.args.get('reverse', type=validate_boolean_value)
 
     try:
         video_paths = fetch_all_video_paths()
@@ -32,7 +34,7 @@ def get_all_video_filenames():
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
-    sorted_videos = sort_videos(video_paths=video_paths, query_filter=query_filter)
+    sorted_videos = sort_videos(video_paths=video_paths, query_filter=query_filter, reverse=reverse)
     total_items = len(sorted_videos)
 
     start_index = (page - 1) * VIDEOS_PER_PAGE
@@ -72,8 +74,19 @@ def get_video():
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
+    video_duration_sec = fetch_video_duration(filename)
+    raw_data = fetch_video_sensordata(filename)
+    video_analyses_data = []
+    for data in raw_data:
+        video_analyses_data.append({
+            "timestamp_ms": data.timestamp_ms,
+            "item_found": data.item_found
+        })
+
     response_data = {
-        'video_link': f"{api_url}video/download?filename={filename}"
+        'video_link': f"{api_url}video/download?filename={filename}",
+        'duration': video_duration_sec,
+        'analysis_data': video_analyses_data
     }
 
     return jsonify(response_data), 200
@@ -93,6 +106,25 @@ def download_video():
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
-    response = send_file(video_path, mimetype='video/mp4')
+    response = send_file(video_path, mimetype='video')
 
     return response
+
+
+@api.route('/video-preview')
+@requires_authentication
+def generate_preview():
+    video_name = request.args.get('filename', default='')
+    try:
+        preview_path = generate_video_preview(video_name)
+        response = send_file(preview_path, mimetype='image/png')
+
+        return response
+    except InvalidFilenameException as e:
+        abort(http.client.BAD_REQUEST, e.message)
+    except FileNotFoundError:
+        abort(http.client.BAD_REQUEST, f"File not found")
+    except IsADirectoryError:
+        abort(http.client.BAD_REQUEST, f"Specified file was a directory")
+    except FileCouldNotBeOpened as e:
+        abort(http.client.INTERNAL_SERVER_ERROR, e.message)

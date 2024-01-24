@@ -12,3 +12,11 @@ class NotConnectedToNasException(Exception):
     def __init__(self, message="Failed to mount NAS drive"):
         self.message = message
         super().__init__(self.message)
+
+
+class FileCouldNotBeOpened(Exception):
+    """Raised when a possibly damaged or corrupt file could not be opened"""
+
+    def __init__(self, message="Could not read the video, file might be damaged or corrupted"):
+        self.message = message
+        super().__init__(self.message)
