@@ -3,7 +3,7 @@ import http.client
 from flask import request, jsonify
 from flask_socketio import disconnect
 from itsdangerous import BadTimeSignature, BadSignature
-from app_setup import security, User, socketio
+from app_setup import security, User
 
 
 def validate_token(token):
