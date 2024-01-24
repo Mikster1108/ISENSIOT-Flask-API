@@ -29,7 +29,6 @@ class SCFlask:
             elif request.args.get('token'):
                 request_token = request.args.get('token')
             else:
-                # todo: check properly if user is connected
                 try:
                     disconnect()
                 except Exception:
