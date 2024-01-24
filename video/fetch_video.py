@@ -1,15 +1,7 @@
-import os
-
-from app_setup import Video, db
+from app_setup import Video, db, VIDEO_FOOTAGE_PATH, VIDEO_PREVIEW_PATH
 from common.fetch_file import get_file_path, get_all_file_paths
 from video.exceptions import InvalidFilenameException, NotConnectedToNasException
 from video.validate_parameters import validate_filename
-
-VIDEO_DIRECTORY_NAME = "Video-recordings"
-VIDEO_PREVIEW_DIRECTORY_NAME = "Video-previews"
-
-VIDEO_FOOTAGE_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), VIDEO_DIRECTORY_NAME)
-VIDEO_PREVIEW_PATH = os.path.join(os.getenv("NAS_DRIVE_MOUNT_PATH"), VIDEO_PREVIEW_DIRECTORY_NAME)
 
 
 def fetch_all_video_paths():
