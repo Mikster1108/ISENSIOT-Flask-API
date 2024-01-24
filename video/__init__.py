@@ -7,7 +7,7 @@ from video.exceptions import NotConnectedToNasException, InvalidFilenameExceptio
 from video.fetch_video import fetch_all_video_paths, fetch_video_path_by_filename, fetch_video_preview, \
     fetch_video_duration
 from video.filter import sort_videos
-from video.validate_parameters import validate_filename
+from video.validate_parameters import validate_filename, validate_boolean_value
 from video.video_preview import generate_video_preview
 
 api = Blueprint('video', __name__)
@@ -21,6 +21,7 @@ VIDEOS_PER_PAGE = 8
 def get_all_video_filenames():
     page = request.args.get('page', default=1, type=int)
     query_filter = request.args.get('filter')
+    reverse = request.args.get('reverse', type=validate_boolean_value)
 
     try:
         video_paths = fetch_all_video_paths()
@@ -33,7 +34,7 @@ def get_all_video_filenames():
     except IsADirectoryError:
         abort(http.client.BAD_REQUEST, f"Specified file was a directory")
 
-    sorted_videos = sort_videos(video_paths=video_paths, query_filter=query_filter)
+    sorted_videos = sort_videos(video_paths=video_paths, query_filter=query_filter, reverse=reverse)
     total_items = len(sorted_videos)
 
     start_index = (page - 1) * VIDEOS_PER_PAGE

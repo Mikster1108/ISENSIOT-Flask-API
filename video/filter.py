@@ -33,13 +33,12 @@ def get_video_duration(file_path):
         video.release()
 
 
-def sort_videos(video_paths, query_filter=None):
+# Reverse = True gives ascending order
+def sort_videos(video_paths, query_filter=None, reverse=True):
     if query_filter == 'date':
-        # Newest video is the first one in the list
-        sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=True)
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: filename_to_datetime(os.path.basename(filepath)), reverse=reverse)
     elif query_filter == 'duration':
-        # Shortest video is the first one in the list
-        sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath))
+        sorted_video_paths = sorted(video_paths, key=lambda filepath: get_video_duration(filepath), reverse=reverse)
     else:
         sorted_video_paths = video_paths
 

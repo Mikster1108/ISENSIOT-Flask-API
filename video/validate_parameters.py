@@ -16,3 +16,6 @@ def validate_filename(filename):
     if extension not in ALLOWED_EXTENSIONS:
         raise InvalidFilenameException
 
+
+def validate_boolean_value(value):
+    return value.lower() == 'true'
