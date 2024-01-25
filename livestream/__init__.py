@@ -1,8 +1,9 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from livestream.handle_camera_feed import CameraThread
+from livestream.record_stream import connect_ssh
 from livestream.socket_listeners import addListener, removeListener, getListenersAmount
 from security import SCFlask
-from app_setup import socketio
+from app_setup import socketio, limiter
 from flask_socketio import emit
 
 api = Blueprint('livestream', __name__)
@@ -33,3 +34,15 @@ def handle_stream_request():
     else:
         emit('start_stream_response', {'data': 'Stream is already running'})
 
+
+@limiter.limit("10 per minute")
+@api.route('/start-recording', methods=['GET'])
+@requires_authentication
+def start_recording():
+    recording = connect_ssh()
+    if recording:
+        return jsonify({"success": "Recording..."}), 200
+    elif recording is False:
+        return jsonify({"error": "Failed to start recording"}), 500
+    else:
+        return jsonify({"status": "Waiting for camera response"}), 200
