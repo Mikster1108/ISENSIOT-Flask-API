@@ -81,7 +81,7 @@ class Detector:
             faces = facedetect.detectMultiScale(gray, 1.3, 5)
             for (x, y, w, h) in faces:
                 serial, conf = recognizer.predict(gray[y:y + h, x:x + w])
-                if conf > 55:
+                if conf > 85 and str(name_list[serial]) not in itemsFoundList:
                     itemsFoundList.append(str(name_list[serial]))
                     timestamps.append(cap.get(cv2.CAP_PROP_POS_MSEC))
 
