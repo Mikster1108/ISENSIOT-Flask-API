@@ -5,7 +5,7 @@ from app_setup import socketio
 
 
 STREAM_PORT = 8089
-STREAM_URL = f"{os.getenv('RASPBERRY_PI_IP')}:{STREAM_PORT}/0/stream" if os.getenv('RASPBERRY_PI_IP') else 0
+STREAM_URL = f"http://{os.getenv('RASPBERRY_PI_IP')}:{STREAM_PORT}/0/stream" if os.getenv('RASPBERRY_PI_IP') else 0
 
 
 class CameraThread:
