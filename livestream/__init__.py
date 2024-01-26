@@ -48,7 +48,7 @@ def start_recording():
 
 
 def emit_recording_message():
-    for _ in range(5):
+    for _ in range(RECORDING_TIME_SECONDS):
         socketio.sleep(1)
         socketio.emit('start_recording_response', {'data': 'Camera is recording...'})
     socketio.sleep(2)
