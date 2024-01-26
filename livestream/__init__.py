@@ -38,6 +38,9 @@ def handle_stream_request():
 
 @socketio.on('start-recording')
 def start_recording():
+    emit('start_recording_response', {'init': 'Pausing stream and waiting for response...'})
+    socketio.sleep(1)
+
     recording = connect_ssh()
     if recording:
         emit('start_recording_response', {'data': 'Camera is recording...'})
