@@ -39,7 +39,6 @@ def handle_stream_request():
 @socketio.on('start-recording')
 def start_recording():
     recording = connect_ssh()
-    # recording = True
     if recording:
         emit('start_recording_response', {'data': 'Camera is recording...'})
 
@@ -54,3 +53,5 @@ def emit_recording_message():
         socketio.emit('start_recording_response', {'data': 'Camera is recording...'})
     socketio.sleep(2)
     socketio.emit('start_recording_response', {'data': 'Camera is done recording'})
+    socketio.sleep(2)
+    socketio.emit('start_recording_response', {'data': ''})
