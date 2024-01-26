@@ -25,10 +25,10 @@ def connect_ssh():
     try:
         client.connect(host, username=username, password=password)
         _stdin, _stdout,_stderr = client.exec_command(command)
-        if _stderr:
+        if _stderr and _stdout.read().decode():
             client.close()
             return False
-        print(_stdout.read().decode())
+
         client.close()
 
         del client, _stdin, _stdout, _stderr
