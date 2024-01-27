@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from livestream.handle_camera_feed import CameraThread
+from livestream.record_stream import connect_ssh
 from livestream.socket_listeners import addListener, removeListener, getListenersAmount
 from security import SCFlask
 from app_setup import socketio
@@ -8,6 +9,7 @@ from flask_socketio import emit
 api = Blueprint('livestream', __name__)
 requires_authentication = SCFlask.requires_authentication
 camera_thread = CameraThread()
+RECORDING_TIME_SECONDS = 90
 
 
 @socketio.on('connect')
@@ -33,3 +35,26 @@ def handle_stream_request():
     else:
         emit('start_stream_response', {'data': 'Stream is already running'})
 
+
+@socketio.on('start-recording')
+def start_recording():
+    emit('start_recording_response', {'init': 'Pausing stream and waiting for response...'})
+    socketio.sleep(1)
+
+    recording = connect_ssh()
+    if recording:
+        emit('start_recording_response', {'data': 'Camera is recording...'})
+
+        socketio.start_background_task(target=emit_recording_message)
+    elif recording is False:
+        emit('start_recording_response', {'error': 'Failed to start recording'})
+
+
+def emit_recording_message():
+    for _ in range(RECORDING_TIME_SECONDS):
+        socketio.sleep(1)
+        socketio.emit('start_recording_response', {'data': 'Camera is recording...'})
+    socketio.sleep(2)
+    socketio.emit('start_recording_response', {'data': 'Camera is done recording'})
+    socketio.sleep(2)
+    socketio.emit('start_recording_response', {'data': ''})
