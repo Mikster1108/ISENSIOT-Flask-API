@@ -1,8 +1,13 @@
-from flask import Flask
+from app_setup import app, socketio
+from user import api as user
+from sensordata import api as sensor_data
+from video import api as video
+from livestream import api as livestream
 
-app = Flask(__name__)
+app.register_blueprint(user, url_prefix='/user')
+app.register_blueprint(sensor_data, url_prefix='/sensor_data')
+app.register_blueprint(video, url_prefix='/video')
+app.register_blueprint(livestream, url_prefix='/livestream')
 
-
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+if __name__ == "__main__":
+    socketio.run(app, use_reloader=False)  # Set debug to False and use_reloader to False for video analysis
