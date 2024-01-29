@@ -10,4 +10,4 @@ app.register_blueprint(video, url_prefix='/video')
 app.register_blueprint(livestream, url_prefix='/livestream')
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, use_reloader=True)  # Set debug to False and use_reloader to False for video analysis
+    socketio.run(app, use_reloader=False)  # Set debug to False and use_reloader to False for video analysis
